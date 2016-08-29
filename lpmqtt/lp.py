@@ -18,14 +18,19 @@ import imaplib2 as imaplib
 
 class LPImapWatcher(object):
 
-    def __init__(self, imap_user, imap_pass, delete=False):
+    def __init__(self, server, imap_user, imap_pass, folder='INBOX', ssl=False,
+                 delete=False):
         super(LPImapWatcher, self).__init__()
-        self.imap = imaplib.IMAP4()
+        self.folder = folder
+        if ssl:
+            self.imap = imaplib.IMAP4_SSL(server)
+        else:
+            self.imap = imaplib.IMAP4(server)
         self.imap.login(imap_user, imap_pass)
         self.delete = delete
 
     def getEvents(self):
-        self.imap.select()
+        self.imap.select(self.folder)
         events = self._find_new_email()
         return events
 

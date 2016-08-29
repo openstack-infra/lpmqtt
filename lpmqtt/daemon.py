@@ -92,7 +92,27 @@ def main():
         keepalive=keepalive,
         auth=auth)
 
-    launchpad = lp.LPImap('', '')
+    # IMAP email settings
+    imap_server = config.get('imap', 'hostname')
+    imap_user = config.get('imap', 'username')
+    imap_password = config.get('imap', 'password')
+    if config.has_option('imap', 'use_ssl'):
+        imap_ssl = config.getboolean('imap', 'use_ssl')
+    else:
+        imap_ssl = False
+
+    if config.has_option('imap', 'folder'):
+        imap_folder = config.get('imap', 'folder')
+    else:
+        imap_folder = 'INBOX'
+
+    if config.has_option('imap', 'delete-old'):
+        imap_delete = config.getboolean('imap', 'delete-old')
+    else:
+        imap_delete = False
+
+    launchpad = lp.LPImap(imap_server, imap_user, imap_password,
+                          folder=imap_folder, ssl=imap_ssl, delete=imap_delete)
     while True:
         events = launchpad.getEvents()
         for event in events:
