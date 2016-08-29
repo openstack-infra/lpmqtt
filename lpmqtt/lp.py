@@ -13,6 +13,8 @@
 # under the License.
 
 import email
+import re
+
 import imaplib2 as imaplib
 
 
@@ -41,6 +43,9 @@ class LPImapWatcher(object):
         event['bug-reporter'] = message['X-Launchpad-Bug-Reporter']
         event['bug-modifier'] = message['X-Launchpad-Bug-Modifier']
         event['tags'] = message['X-Launchpad-Bug-Tags'].split(' ')
+        subject = message['Subject']
+        bug_num_str = re.match('^\[(.*?)\]', subject).group(0)
+        event['bug-number'] = bug_num_str.split(' ')[1].rstrip(']')
         bug_info = message['X-Launchpad-Bug'].split(';')
         for info in bug_info:
             clean_info = info.lstrip()
