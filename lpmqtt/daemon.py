@@ -84,7 +84,7 @@ def main():
         auth = {'username': mqtt_username}
         if mqtt_password:
             auth['password'] = mqtt_password
-    base_topic = config.get('mqtt', 'topic')
+    base_topic = config.get('mqtt', 'base_topic')
 
     mqttqueue = PushMQTT(
         config.get('mqtt', 'hostname'),
@@ -111,8 +111,9 @@ def main():
     else:
         imap_delete = False
 
-    launchpad = lp.LPImap(imap_server, imap_user, imap_password,
-                          folder=imap_folder, ssl=imap_ssl, delete=imap_delete)
+    launchpad = lp.LPImapWatcher(imap_server, imap_user, imap_password,
+                                 folder=imap_folder, ssl=imap_ssl,
+                                 delete=imap_delete)
     while True:
         events = launchpad.getEvents()
         for event in events:

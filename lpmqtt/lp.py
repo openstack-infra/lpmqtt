@@ -42,7 +42,9 @@ class LPImapWatcher(object):
         event['commenters'] = message['X-Launchpad-Bug-Commenters'].split(' ')
         event['bug-reporter'] = message['X-Launchpad-Bug-Reporter']
         event['bug-modifier'] = message['X-Launchpad-Bug-Modifier']
-        event['tags'] = message['X-Launchpad-Bug-Tags'].split(' ')
+        bug_tags = message['X-Launchpad-Bug-Tags']
+        if bug_tags:
+            event['tags'] = bug_tags.split(' ')
         subject = message['Subject']
         bug_num_str = re.match('^\[(.*?)\]', subject).group(0)
         event['bug-number'] = bug_num_str.split(' ')[1].rstrip(']')
@@ -50,26 +52,33 @@ class LPImapWatcher(object):
         for info in bug_info:
             clean_info = info.lstrip()
             key_value = clean_info.split('=')
-            key = key_value[0]
-            value = key_value[1]
-            if key == 'product':
-                event['project'] = value
-            else:
-                event[key] = value
+            if len(key_value) == 2:
+                key = key_value[0]
+                value = key_value[1]
+                if key == 'product':
+                    event['project'] = value
+                else:
+                    event[key] = value
+        event['body'] = message.get_payload()
         return event
 
     def _process_msg(self, data):
         event = {}
         message = email.message_from_string(data[1])
-        if 'X-Generated-By' not in message or 'Launchpad' not in message[
-            'X-Generated-By']:
+        print('Initial filtering of Message ID: %s' % message['Message-Id'])
+        generated_by = message['X-Generated-By']
+        if not generated_by or 'Launchpad' not in generated_by:
+            print('%s is not from LP' % message['Message-Id'])
             return event
         # Mark the message as read
         email_id = data[0].split()[0]
-        self.imap.fetch(email_id, '(RFC822)')
+        typ, full_msg = self.imap.fetch(email_id, '(RFC822)')
+        message = email.message_from_string(full_msg[0][1])
+        print('Retrieved full message with id %s and marked as read'
+              % message['Message-Id'])
         event_type = message['X-Launchpad-Notification-Type']
         if event_type == 'bug':
-            event = self._proccess_bug(message)
+            event = self._process_bug(message)
         else:
             for header in message:
                 if header.startswith('X-Launchpad'):
@@ -82,7 +91,9 @@ class LPImapWatcher(object):
         typ, msg_ids = self.imap.search(None, "UNSEEN")
         for msg in msg_ids[0].split():
             typ, data = self.imap.fetch(msg, "(BODY.PEEK[HEADER])")
-            output = self._process_msg(data, msg)
+            output = self._process_msg(data[0])
+            if not output:
+                continue
             if self.delete:
                 self.imap.store(msg, '+FLAGS', '\\Deleted')
             events.append(output)
