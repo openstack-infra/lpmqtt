@@ -13,6 +13,7 @@
 # under the License.
 
 import email
+from email.header import decode_header
 import re
 
 import imaplib2 as imaplib
@@ -46,8 +47,16 @@ class LPImapWatcher(object):
         if bug_tags:
             event['tags'] = bug_tags.split(' ')
         subject = message['Subject']
-        bug_num_str = re.match('^\[(.*?)\]', subject).group(0)
-        event['bug-number'] = bug_num_str.split(' ')[1].rstrip(']')
+        header_decode_out = decode_header(subject)
+        subject = header_decode_out[0][0]
+        bug_num_re_match = re.match('^\[(.*?)\]', subject)
+        if not bug_num_re_match:
+            print("Subject %s does not contain a parseable bug number"
+                  % subject)
+        else:
+            bug_num_str = bug_num_re_match.group(0)
+            event['bug-number'] = bug_num_str.split(' ')[1].rstrip(']')
+
         bug_info = message['X-Launchpad-Bug'].split(';')
         for info in bug_info:
             clean_info = info.lstrip()

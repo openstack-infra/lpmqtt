@@ -51,7 +51,8 @@ def process_event(event, base_topic):
         pieces.append(event['project'])
         if 'event_type' in event:
             pieces.append(event['event-type'])
-            pieces.append(event['bug-number'])
+            if 'bug-number' in event:
+                pieces.append(event['bug-number'])
     topic = "/".join(pieces)
     msg = json.dumps(event)
     return msg, topic
