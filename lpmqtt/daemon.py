@@ -49,7 +49,7 @@ def process_event(event, base_topic):
     pieces = [base_topic]
     if 'project' in event:
         pieces.append(event['project'])
-        if 'event_type' in event:
+        if 'event-type' in event:
             pieces.append(event['event-type'])
             if 'bug-number' in event:
                 pieces.append(event['bug-number'])
