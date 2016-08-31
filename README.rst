@@ -18,6 +18,15 @@ by launchpad some of the other fields may not be present. In those cases the
 topic will start from the base topic and will use fields moving towards the
 right until one is missing.
 
+Running lpmqtt
+==============
+lpmqtt only runs in the foreground and logs all log messages to STDOUT. It takes
+one argument, the config file (there is no default path) which is required. For
+example::
+
+  % lpmqtt /etc/lpmqtt.conf
+
+will run lpmqtt.
 
 Configuration
 =============
