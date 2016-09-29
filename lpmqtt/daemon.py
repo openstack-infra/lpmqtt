@@ -111,6 +111,10 @@ def main():
         imap_delete = config.getboolean('imap', 'delete-old')
     else:
         imap_delete = False
+    if config.has_option('imap', 'imap-timeout'):
+        imap_idle_timeout = config.getint('imap', 'idle-timeout')
+    else:
+        imap_idle_timeout = 60
 
     launchpad = lp.LPImapWatcher(imap_server, imap_user, imap_password,
                                  folder=imap_folder, ssl=imap_ssl,
@@ -120,7 +124,7 @@ def main():
         for event in events:
             msg, topic = process_event(event, base_topic)
             mqttqueue.publish_single(topic, msg)
-        launchpad.imap.idle()
+        launchpad.imap.idle(timeout=imap_idle_timeout)
 
 if __name__ == "__main__":
     main()

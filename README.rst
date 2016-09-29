@@ -51,6 +51,7 @@ configuration of the imap server you're connecting to:
  * **delete-old** - Set this to *True* to have lpmqtt delete messages after it
                     finishes processing them. By default it will just mark them
                     as read.
+ * **idle-timeout** - The number of seconds to use for the idle timeout
 
 MQTT
 ----
